@@ -1,0 +1,281 @@
+package smsintegration;
+
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import org.xml.sax.SAXException;
+
+public class SMSIntegration {
+
+    public static void main(String[] args) throws Exception {
+
+	  }
+
+//-----------------------------------------Create Post Message CALL J Function-------------------------------------------------------------------------------------
+    @SuppressWarnings("static-access")
+    public static String CreatePostMessage(String str) throws Exception {
+        String resultdata = "";
+
+        DirectMessage directmessage = new DirectMessage();
+
+        directmessage.parseData(str, "|");
+
+			// handling null pointer exception
+        for (int i = 0; i < directmessage.Dataarr.length; i++) {
+
+            if (directmessage.Dataarr[i] == null) {
+
+                directmessage.Dataarr[i] = "";
+            }
+        }
+
+        directmessage.setPrivatekey(directmessage.Dataarr[0]);
+        directmessage.setAPILink(directmessage.Dataarr[1]);
+        directmessage.setTransactionTimeStamp(directmessage.Dataarr[2]);
+        directmessage.setInternalReference(directmessage.Dataarr[3]);
+        directmessage.setCoCode(directmessage.Dataarr[4]);
+        directmessage.setCompanyID(directmessage.Dataarr[5]);
+        directmessage.setCustomerNo(directmessage.Dataarr[6]);
+        directmessage.setCustomerSector(directmessage.Dataarr[7]);
+        directmessage.setMobileNo(directmessage.Dataarr[8]);
+        directmessage.setTransactionType(directmessage.Dataarr[9]);
+        directmessage.setSMSText(directmessage.Dataarr[10]);
+        directmessage.setSource("USR");
+
+		//System.out.println(directmessage.SHA256HMACString());
+			//Calculate And Set Secure Hash
+        directmessage.setSecureHash(directmessage.hash(directmessage.getPrivatekey(), directmessage.SHA256HMACString()));
+
+			// Generate XML String With Settled Data
+        directmessage.XMLWriter(directmessage.getTransactionTimeStamp(), directmessage.getInternalReference(), directmessage.getCoCode(), directmessage.getCompanyID(), directmessage.getCustomerNo(),
+                directmessage.getCustomerSector(), directmessage.getMobileNo(), directmessage.getSource(), directmessage.getTransactionType(), directmessage.getSMSText(), directmessage.getSecureHash());
+
+			// Post Data To API
+        directmessage.Post(directmessage.getAPILink());
+
+        return directmessage.Status;
+
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//-----------------------------------------Create ATM Message CALL J Function-------------------------------------------------------------------------------------
+    @SuppressWarnings("static-access")
+    public static String SendATMMessage(String str) throws KeyManagementException, NoSuchAlgorithmException,
+            IOException, ParserConfigurationException, SAXException, TransformerException, InvalidKeyException {
+
+        ATMMessages atmmessages = new ATMMessages();
+
+        atmmessages.parseData(str, "|");
+
+				// handling null pointer exception
+        for (int i = 0; i < atmmessages.Container.length; i++) {
+
+            if (atmmessages.Container[i] == null) {
+
+                atmmessages.Container[i] = "";
+            }
+        }
+
+        atmmessages.setVariables();
+
+			//System.out.println(atmmessages.SHA256HMACString());
+				//Calculate And Set Secure Hash
+        atmmessages.setSecureHash(atmmessages.hash(atmmessages.getPrivateKey(), atmmessages.SHA256HMACString()));
+
+				// Generate XML String With Settled Data
+        atmmessages.XMLWriter();
+
+				// Post Data To API
+        atmmessages.Post(atmmessages.getAPIlink());
+
+        return atmmessages.Status;
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		//-----------------------------------------Create TRF Message CALL J Function-------------------------------------------------------------------------------------
+    @SuppressWarnings("static-access")
+    public static String SendTRFMessage(String str) throws KeyManagementException, NoSuchAlgorithmException,
+            IOException, ParserConfigurationException, SAXException, TransformerException, InvalidKeyException {
+
+        TRFMessages trfmessages = new TRFMessages();
+
+        trfmessages.parseData(str, "|");
+
+						// handling null pointer exception
+        for (int i = 0; i < trfmessages.Container.length; i++) {
+
+            if (trfmessages.Container[i] == null) {
+
+                trfmessages.Container[i] = "";
+            }
+        }
+
+        trfmessages.setVariables();
+
+					//System.out.println(trfmessages.SHA256HMACString());
+						//Calculate And Set Secure Hash
+        trfmessages.setSecureHash(trfmessages.hash(trfmessages.getPrivateKey(), trfmessages.SHA256HMACString()));
+
+						// Generate XML String With Settled Data
+        trfmessages.XMLWriter();
+
+						// Post Data To API
+        trfmessages.Post(trfmessages.getAPIlink());
+
+        return trfmessages.Status;
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// ----------------------------------------------------Create ATM Message Extended CALL J Function-------------------------------------------------------------------------------------
+    @SuppressWarnings("static-access")
+    public static String SendATMMessageWithBal(String str)
+            throws KeyManagementException, NoSuchAlgorithmException, IOException,
+            ParserConfigurationException, SAXException, TransformerException, InvalidKeyException {
+
+        ATMMessagesExtended atmmessagesextended = new ATMMessagesExtended();
+
+        atmmessagesextended.parseData(str, "|");
+
+					// handling null pointer exception
+        for (int i = 0; i < atmmessagesextended.Container.length; i++) {
+
+            if (atmmessagesextended.Container[i] == null) {
+
+                atmmessagesextended.Container[i] = "";
+            }
+        }
+
+        atmmessagesextended.setVariables();
+
+					//System.out.println(atmmessagesextended.SHA256HMACString());
+					// Calculate And Set Secure Hash
+        atmmessagesextended.setSecureHash(
+                atmmessagesextended.hash(atmmessagesextended.getPrivateKey(), atmmessagesextended.SHA256HMACString()));
+
+					// Generate XML String With Settled Data
+        atmmessagesextended.XMLWriter();
+
+					// Post Data To API
+        atmmessagesextended.Post(atmmessagesextended.getAPIlink());
+
+        return atmmessagesextended.Status;
+    }
+
+// +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//-----------------------------------------------Create TRF Message Extended CALL J Function-------------------------------------------------------------------------------------
+    @SuppressWarnings("static-access")
+    public static String SendTRFMessageWithBal(String str) throws KeyManagementException, NoSuchAlgorithmException,
+            IOException, ParserConfigurationException, SAXException, TransformerException, InvalidKeyException {
+
+        TRFMessagesExtended trfmessagesextended = new TRFMessagesExtended();
+
+        trfmessagesextended.parseData(str, "|");
+
+								// handling null pointer exception
+        for (int i = 0; i < trfmessagesextended.Container.length; i++) {
+
+            if (trfmessagesextended.Container[i] == null) {
+
+                trfmessagesextended.Container[i] = "";
+            }
+        }
+
+        trfmessagesextended.setVariables();
+
+							//System.out.println(trfmessagesextended.SHA256HMACString());
+								//Calculate And Set Secure Hash
+        trfmessagesextended.setSecureHash(trfmessagesextended.hash(trfmessagesextended.getPrivateKey(), trfmessagesextended.SHA256HMACString()));
+
+								// Generate XML String With Settled Data
+        trfmessagesextended.XMLWriter();
+
+								// Post Data To API
+        trfmessagesextended.Post(trfmessagesextended.getAPIlink());
+
+        return trfmessagesextended.Status;
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+@SuppressWarnings("static-access")
+	public static String SendATMMessageWithDecline(String str) throws KeyManagementException, NoSuchAlgorithmException,
+			IOException, ParserConfigurationException, SAXException, TransformerException, InvalidKeyException {
+
+		ATMMessagesWithDecline atmmessageswithdecline = new ATMMessagesWithDecline();
+
+		atmmessageswithdecline.parseData(str, "|");
+
+		// handling null pointer exception
+
+		for (int i = 0; i < atmmessageswithdecline.Container.length; i++) {
+
+			if (atmmessageswithdecline.Container[i] == null) {
+
+				atmmessageswithdecline.Container[i] = "";
+			}
+		}
+
+		atmmessageswithdecline.setVariables();
+
+		// System.out.println(atmmessages.SHA256HMACString());
+
+		// Calculate And Set Secure Hash
+
+		atmmessageswithdecline.setSecureHash(atmmessageswithdecline.hash(atmmessageswithdecline.getPrivateKey(), atmmessageswithdecline.SHA256HMACString()));
+
+		// Generate XML String With Settled Data
+
+		atmmessageswithdecline.XMLWriter();
+
+		// Post Data To API
+
+		atmmessageswithdecline.Post(atmmessageswithdecline.getAPIlink());
+
+		return atmmessageswithdecline.Status;
+	}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	@SuppressWarnings("static-access")
+	public static String SendATMMessageWithBalWithDecline(String str) throws KeyManagementException, NoSuchAlgorithmException,
+			IOException, ParserConfigurationException, SAXException, TransformerException, InvalidKeyException {
+
+		ATMMessagesExtendedWithDeclineReason atmmessageswithbalwithdecline = new ATMMessagesExtendedWithDeclineReason();
+
+		atmmessageswithbalwithdecline.parseData(str, "|");
+
+		// handling null pointer exception
+
+		for (int i = 0; i < atmmessageswithbalwithdecline.Container.length; i++) {
+
+			if (atmmessageswithbalwithdecline.Container[i] == null) {
+
+				atmmessageswithbalwithdecline.Container[i] = "";
+			}
+		}
+
+		atmmessageswithbalwithdecline.setVariables();
+
+		// System.out.println(atmmessages.SHA256HMACString());
+
+		// Calculate And Set Secure Hash
+
+		atmmessageswithbalwithdecline.setSecureHash(atmmessageswithbalwithdecline.hash(atmmessageswithbalwithdecline.getPrivateKey(), atmmessageswithbalwithdecline.SHA256HMACString()));
+
+		// Generate XML String With Settled Data
+
+		atmmessageswithbalwithdecline.XMLWriter();
+
+		// Post Data To API
+
+		atmmessageswithbalwithdecline.Post(atmmessageswithbalwithdecline.getAPIlink());
+
+		return atmmessageswithbalwithdecline.Status;
+	}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+}

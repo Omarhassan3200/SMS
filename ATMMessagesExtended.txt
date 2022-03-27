@@ -1,0 +1,615 @@
+package smsintegration;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.util.Formatter;
+import java.util.Scanner;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+public class ATMMessagesExtended {
+
+	//-------------------------------------------------------Setters And Getters-------------------------------------------------------------------------------------------
+    public static String getTransactionTimeStamp() {
+        return TransactionTimeStamp;
+    }
+
+    public static void setTransactionTimeStamp(String transactionTimeStamp) {
+        TransactionTimeStamp = transactionTimeStamp;
+    }
+
+    public static String getInternalReference() {
+        return InternalReference;
+    }
+
+    public static void setInternalReference(String internalReference) {
+        InternalReference = internalReference;
+    }
+
+    public static String getCoCode() {
+        return CoCode;
+    }
+
+    public static void setCoCode(String coCode) {
+        CoCode = coCode;
+    }
+
+    public static String getCompanyID() {
+        return CompanyID;
+    }
+
+    public static void setCompanyID(String companyID) {
+        CompanyID = companyID;
+    }
+
+    public static String getCustomerNo() {
+        return CustomerNo;
+    }
+
+    public static void setCustomerNo(String customerNo) {
+        CustomerNo = customerNo;
+    }
+
+    public static String getCustomerSector() {
+        return CustomerSector;
+    }
+
+    public static void setCustomerSector(String customerSector) {
+        CustomerSector = customerSector;
+    }
+
+    public static String getMobileNo() {
+        return MobileNo;
+    }
+
+    public static void setMobileNo(String mobileNo) {
+        MobileNo = mobileNo;
+    }
+
+    public static String getCurrency() {
+        return Currency;
+    }
+
+    public static void setCurrency(String currency) {
+        Currency = currency;
+    }
+
+    public static String getCurrencyNoOfDecimals() {
+        return CurrencyNoOfDecimals;
+    }
+
+    public static void setCurrencyNoOfDecimals(String currencyNoOfDecimals) {
+        CurrencyNoOfDecimals = currencyNoOfDecimals;
+    }
+
+    public static String getAmount() {
+        return Amount;
+    }
+
+    public static void setAmount(String amount) {
+        Amount = amount;
+    }
+
+    public static String getSource() {
+        return Source;
+    }
+
+    public static void setSource(String source) {
+        Source = source;
+    }
+
+    public static String getTransactionType() {
+        return TransactionType;
+    }
+
+    public static void setTransactionType(String transactionType) {
+        TransactionType = transactionType;
+    }
+
+    public static String getAccountId() {
+        return AccountId;
+    }
+
+    public static void setAccountId(String accountId) {
+        AccountId = accountId;
+    }
+
+    public static String getPAN() {
+        return PAN;
+    }
+
+    public static void setPAN(String pAN) {
+        PAN = pAN;
+    }
+
+    public static String getResponseCode() {
+        return ResponseCode;
+    }
+
+    public static void setResponseCode(String responseCode) {
+        ResponseCode = responseCode;
+    }
+
+    public static String getTransactionLocation() {
+        return TransactionLocation;
+    }
+
+    public static void setTransactionLocation(String transactionLocation) {
+        TransactionLocation = transactionLocation;
+    }
+
+    public static String getSecureHash() {
+        return SecureHash;
+    }
+
+    public static void setSecureHash(String secureHash) {
+        SecureHash = secureHash;
+    }
+
+    public static String getAPIlink() {
+        return APIlink;
+    }
+
+    public static void setAPIlink(String aPIlink) {
+        APIlink = aPIlink;
+    }
+
+    public static String getPrivateKey() {
+        return PrivateKey;
+    }
+
+    public static void setPrivateKey(String privateKey) {
+        PrivateKey = privateKey;
+    }
+
+    public static String getStatus() {
+        return Status;
+    }
+
+    public static void setStatus(String status) {
+        Status = status;
+    }
+
+    public static StringWriter getBuf() {
+        return buf;
+    }
+
+    public static void setBuf(StringWriter buf) {
+        ATMMessages.buf = buf;
+    }
+
+    public static StringWriter getBuf2() {
+        return buf2;
+    }
+
+    public static void setBuf2(StringWriter buf2) {
+        ATMMessages.buf2 = buf2;
+    }
+
+    public static String getHashAlgorithm() {
+        return HASH_ALGORITHM;
+    }
+
+    public static String getAvailableBalance() {
+        return AvailableBalance;
+    }
+
+    public static void setAvailableBalance(String availableBalance) {
+        AvailableBalance = availableBalance;
+    }
+
+    public static String getAccountCurrency() {
+        return AccountCurrency;
+    }
+
+    public static void setAccountCurrency(String accountCurrency) {
+        AccountCurrency = accountCurrency;
+    }
+
+    public static String getAccountCurrencyNoOfDecimals() {
+        return AccountCurrencyNoOfDecimals;
+    }
+
+    public static void setAccountCurrencyNoOfDecimals(String accountCurrencyNoOfDecimals) {
+        AccountCurrencyNoOfDecimals = accountCurrencyNoOfDecimals;
+    }
+
+	//---------------------------------------------------------Global Variables---------------------------------------------------------------------------------------------	
+    public static String TransactionTimeStamp;
+    public static String InternalReference;
+    public static String CoCode;
+    public static String CompanyID;
+    public static String CustomerNo;
+    public static String CustomerSector;
+    public static String MobileNo;
+    public static String Currency;
+    public static String CurrencyNoOfDecimals;
+    public static String Amount;
+    public static String AvailableBalance;
+    public static String AccountCurrency;
+    public static String AccountCurrencyNoOfDecimals;
+    public static String Source;
+    public static String TransactionType;
+    public static String AccountId;
+    public static String PAN;
+    public static String ResponseCode;
+    public static String TransactionLocation;
+
+    public static String SecureHash;
+
+    public static String[] Container;
+
+    public static String APIlink;
+
+    public static final String HASH_ALGORITHM = "HMACSHA256";
+    public static String PrivateKey;
+    public static String Status;
+    public static StringWriter buf;
+    public static StringWriter buf2;
+
+    ATMMessagesExtended() {
+
+        TransactionTimeStamp = "";
+        InternalReference = "";
+        CoCode = "";
+        CompanyID = "";
+        CustomerNo = "";
+        CustomerSector = "";
+        MobileNo = "";
+        Currency = "";
+        CurrencyNoOfDecimals = "";
+        Amount = "";
+        AvailableBalance = "";
+        AccountCurrency = "";
+        AccountCurrencyNoOfDecimals = "";
+        Source = "";
+        TransactionType = "";
+        AccountId = "";
+        PAN = "";
+        ResponseCode = "";
+        TransactionLocation = "";
+        SecureHash = "";
+        Container = new String[22];
+        APIlink = "";
+        PrivateKey = "";
+        Status = "";
+        buf = new StringWriter();
+        buf2 = new StringWriter();
+
+    }
+
+	//--------------------------------------------------------------Functions------------------------------------------------------------------
+    public static void setVariables() {
+
+        setPrivateKey(Container[0]);
+        setAPIlink(Container[1]);
+        setTransactionTimeStamp(Container[2]);
+        setInternalReference(Container[3]);
+        setCoCode(Container[4]);
+        setCompanyID(Container[5]);
+        setCustomerNo(Container[6]);
+        setCustomerSector(Container[7]);
+        setMobileNo(Container[8]);
+        setCurrency(Container[9]);
+        setCurrencyNoOfDecimals(Container[10]);
+        setAmount(Container[11]);
+        setSource(Container[12]);
+        setTransactionType(Container[13]);
+        setAccountId(Container[14]);
+        setPAN(Container[15]);
+        setResponseCode(Container[16]);
+        setTransactionLocation(Container[17]);
+        //setDeclineReason(Container[18]);
+        setAvailableBalance(Container[18]);
+        setAccountCurrency(Container[19]);
+        setAccountCurrencyNoOfDecimals(Container[20]);
+
+    }
+	//------------------------------------------------------------------------------------------------------------------------------------------	
+    // Convert To Hex
+
+    public static String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+
+        try (Formatter formatter = new Formatter(sb)) {
+            for (byte b : bytes) {
+                formatter.format("%02x", b);
+            }
+        }
+        return sb.toString();
+    }
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// Hashing Function
+    public static String hashMac(String text, String secretKey) throws SignatureException {
+
+        try {
+            SecretKeySpec sk = new SecretKeySpec(secretKey.getBytes(), getHashAlgorithm());
+            Mac mac = Mac.getInstance(((java.security.Key) sk).getAlgorithm());
+            mac.init((java.security.Key) sk);
+            final byte[] hmac = mac.doFinal(text.getBytes());
+            return toHexString(hmac);
+        } catch (NoSuchAlgorithmException e1) {
+            // throw an exception or pick a different encryption method
+            throw new SignatureException("error building signature, no such algorithm in device " + HASH_ALGORITHM);
+        } catch (InvalidKeyException e) {
+            throw new SignatureException("error building signature, invalid key " + HASH_ALGORITHM);
+        }
+    }
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public static String hash(String key, String txt) throws NoSuchAlgorithmException, InvalidKeyException {
+
+        Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+        sha256_HMAC.init(new SecretKeySpec(key.getBytes(), "HmacSHA256"));
+        byte[] result = sha256_HMAC.doFinal(txt.getBytes());
+        return (DatatypeConverter.printHexBinary(result));
+        // ONLY CONVERT TO HEX (= SWIFT) NOT FIRST TO BASE64
+
+    }
+
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// Write XML
+    public static void XMLWriter() {
+
+        // path = testpath;
+        try {
+
+            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+            // root elements
+            Document doc = docBuilder.newDocument();
+            Element rootElement = doc.createElement("SubmitSMSRequest");
+            doc.appendChild(rootElement);
+
+            // Transaction TimeStamp
+            Element TransactionTimeStampElement = doc.createElement("TransactionTimeStamp");
+            TransactionTimeStampElement.appendChild(doc.createTextNode(getTransactionTimeStamp()));
+            rootElement.appendChild(TransactionTimeStampElement);
+
+            // Internal Reference
+            Element InternalReferenceElement = doc.createElement("InternalReference");
+            InternalReferenceElement.appendChild(doc.createTextNode(getInternalReference()));
+            rootElement.appendChild(InternalReferenceElement);
+
+            // Company Code
+            Element CoCodeElement = doc.createElement("CoCode");
+            CoCodeElement.appendChild(doc.createTextNode(getCoCode()));
+            rootElement.appendChild(CoCodeElement);
+
+            // Company ID
+            Element CompanyIDElement = doc.createElement("CompanyID");
+            CompanyIDElement.appendChild(doc.createTextNode(getCompanyID()));
+            rootElement.appendChild(CompanyIDElement);
+
+            // Customer Number
+            Element CustomerNoElement = doc.createElement("CustomerNo");
+            CustomerNoElement.appendChild(doc.createTextNode(getCustomerNo()));
+            rootElement.appendChild(CustomerNoElement);
+
+            // Customer Sector
+            Element CustomerSectorElement = doc.createElement("CustomerSector");
+            CustomerSectorElement.appendChild(doc.createTextNode(getCustomerSector()));
+            rootElement.appendChild(CustomerSectorElement);
+
+            // Mobile Number
+            Element MobileNoElement = doc.createElement("MobileNo");
+            MobileNoElement.appendChild(doc.createTextNode(getMobileNo()));
+            rootElement.appendChild(MobileNoElement);
+
+            // Currency
+            Element CurrencyElement = doc.createElement("Currency");
+            CurrencyElement.appendChild(doc.createTextNode(getCurrency()));
+            rootElement.appendChild(CurrencyElement);
+
+            // CurrencyNoOfDecimals
+            Element CurrencyNoOfDecimalsElement = doc.createElement("CurrencyNoOfDecimals");
+            CurrencyNoOfDecimalsElement.appendChild(doc.createTextNode(getCurrencyNoOfDecimals()));
+            rootElement.appendChild(CurrencyNoOfDecimalsElement);
+
+            // Amount
+            Element AmountElement = doc.createElement("Amount");
+            AmountElement.appendChild(doc.createTextNode(getAmount()));
+            rootElement.appendChild(AmountElement);
+
+            // AvailableBalance
+            Element AvailableBalanceElement = doc.createElement("AvailableBalance");
+            AvailableBalanceElement.appendChild(doc.createTextNode(getAvailableBalance()));
+            rootElement.appendChild(AvailableBalanceElement);
+
+            // AccountCurrency
+            Element AccountCurrencyElement = doc.createElement("AccountCurrency");
+            AccountCurrencyElement.appendChild(doc.createTextNode(getAccountCurrency()));
+            rootElement.appendChild(AccountCurrencyElement);
+
+            // AccountCurrencyNoOfDecimals
+            Element AccountCurrencyNoOfDecimalsElement = doc.createElement("AccountCurrencyNoOfDecimals");
+            AccountCurrencyNoOfDecimalsElement.appendChild(doc.createTextNode(getAccountCurrencyNoOfDecimals()));
+            rootElement.appendChild(AccountCurrencyNoOfDecimalsElement);
+
+            // Source
+            Element SourceElement = doc.createElement("Source");
+            SourceElement.appendChild(doc.createTextNode(getSource()));
+            rootElement.appendChild(SourceElement);
+
+            // Transaction Type
+            Element TransactionTypeElement = doc.createElement("TransactionType");
+            TransactionTypeElement.appendChild(doc.createTextNode(getTransactionType()));
+            rootElement.appendChild(TransactionTypeElement);
+
+            // AccountId
+            Element AccountIdElement = doc.createElement("AccountId");
+            AccountIdElement.appendChild(doc.createTextNode(getAccountId()));
+            rootElement.appendChild(AccountIdElement);
+
+            // PAN
+            Element PANElement = doc.createElement("PAN");
+            PANElement.appendChild(doc.createTextNode(getPAN()));
+            rootElement.appendChild(PANElement);
+
+            // ResponseCode
+            Element ResponseCodeElement = doc.createElement("ResponseCode");
+            ResponseCodeElement.appendChild(doc.createTextNode(getResponseCode()));
+            rootElement.appendChild(ResponseCodeElement);
+
+            // TransactionLocation
+            Element TransactionLocationElement = doc.createElement("TransactionLocation");
+            TransactionLocationElement.appendChild(doc.createTextNode(getTransactionLocation()));
+            rootElement.appendChild(TransactionLocationElement);
+
+            // Secure Hash
+            Element SecureHashElement = doc.createElement("SecureHash");
+            SecureHashElement.appendChild(doc.createTextNode(getSecureHash()));
+            rootElement.appendChild(SecureHashElement);
+
+            // write the content into xml file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+            StreamResult result = new StreamResult(buf);
+
+				// Output to console for testing
+            // StreamResult result = new StreamResult(System.out);
+            transformer.transform(source, result);
+
+				// System.out.println("File saved!");
+        } catch (ParserConfigurationException pce) {
+            pce.printStackTrace();
+        } catch (TransformerException tfe) {
+            tfe.printStackTrace();
+        }
+
+    }
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public static String SHA256HMACString() {
+
+        return "TransactionTimeStamp=" + getTransactionTimeStamp() + "&InternalReference=" + getInternalReference()
+                + "&CoCode=" + getCoCode() + "&CompanyID=" + getCompanyID() + "&CustomerNo=" + getCustomerNo()
+                + "&CustomerSector=" + getCustomerSector() + "&MobileNo=" + getMobileNo() + "&Currency=" + getCurrency()
+                + "&CurrencyNoOfDecimals=" + getCurrencyNoOfDecimals() + "&Amount=" + getAmount() + "&AvailableBalance=" + getAvailableBalance() + "&AccountCurrency=" + getAccountCurrency()
+                + "&AccountCurrencyNoOfDecimals=" + getAccountCurrencyNoOfDecimals() + "&Source="
+                + getSource() + "&TransactionType=" + getTransactionType() + "&AccountId=" + getAccountId() + "&PAN="
+                + getPAN() + "&ResponseCode=" + getResponseCode() + "&TransactionLocation=" + getTransactionLocation();
+
+    }
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// Post
+    public static void Post(String APILink) throws IOException, NoSuchAlgorithmException, KeyManagementException,
+            ParserConfigurationException, SAXException, TransformerException {
+
+        URL url = new URL(APILink);
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+        try {
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setRequestMethod("POST");
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+
+            SSLContext sc = SSLContext.getInstance("TLSv1.2");
+            sc.init(null, null, new java.security.SecureRandom());
+            SSLContext.setDefault(sc);
+
+            conn.setSSLSocketFactory(sc.getSocketFactory());
+
+            String body = buf.toString();
+            //System.out.println(body);
+            OutputStream output = new BufferedOutputStream(conn.getOutputStream());
+            output.write(body.getBytes());
+            output.flush();
+            //System.out.println(conn.getResponseCode());
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(conn.getInputStream());
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer xform = transformerFactory.newTransformer();
+
+				// that’s the default xform; use a stylesheet to get a real one
+            xform.transform(new DOMSource(doc), new StreamResult(buf2));
+            //System.out.println(buf2.toString());
+
+            if (conn.getResponseCode() == 200) {
+                Status = "Connection Open| " + buf2.toString();
+                System.out.println(Status);
+            } else {
+                Status = "Error | " + buf2.toString();
+            }
+
+        } finally {
+            conn.disconnect();
+        }
+
+    }
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public static String ConvertXMLToString(String path) {
+
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(path));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        String xmlinput;
+
+        StringBuffer sb = new StringBuffer();
+        try {
+            while ((xmlinput = br.readLine()) != null) {
+                sb.append(xmlinput.trim());
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return sb.toString();
+
+    }
+
+	//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+	//----------------------------------------------Separate Text By Delimiter-------------------------------------------------------------------------
+    public static void parseData(String str, String Delimeter) {
+
+        Scanner lineScanner = new Scanner(str);
+        lineScanner.useDelimiter("\\" + Delimeter);
+        int i = 0;
+        while (lineScanner.hasNext()) {
+
+            Container[i] = lineScanner.next();
+            i++;
+        }
+        lineScanner.close();
+    }
+
+	//------------------------------------------------------------------------------------------------------------------------------------------------------
+}

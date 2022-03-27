@@ -1,0 +1,455 @@
+package smsintegration;
+
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.security.InvalidKeyException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.util.Formatter;
+import java.util.Scanner;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+public class DirectMessage {
+
+//----------------------------------------------------Setters And Getters--------------------------------------------------------------------------------------	
+	// Setters And Getters
+    public static String getTransactionTimeStamp() {
+        return TransactionTimeStamp;
+    }
+
+    public static void setTransactionTimeStamp(String transactionTimeStamp) {
+        TransactionTimeStamp = transactionTimeStamp;
+    }
+
+    public static String getInternalReference() {
+        return InternalReference;
+    }
+
+    public static void setInternalReference(String internalReference) {
+        InternalReference = internalReference;
+    }
+
+    public static String getCoCode() {
+        return CoCode;
+    }
+
+    public static void setCoCode(String coCode) {
+        CoCode = coCode;
+    }
+
+    public static String getCompanyID() {
+        return CompanyID;
+    }
+
+    public static void setCompanyID(String companyID) {
+        CompanyID = companyID;
+    }
+
+    public static String getCustomerNo() {
+        return CustomerNo;
+    }
+
+    public static void setCustomerNo(String customerNo) {
+        CustomerNo = customerNo;
+    }
+
+    public static String getCustomerSector() {
+        return CustomerSector;
+    }
+
+    public static void setCustomerSector(String customerSector) {
+        CustomerSector = customerSector;
+    }
+
+    public static String getMobileNo() {
+        return MobileNo;
+    }
+
+    public static void setMobileNo(String mobileNo) {
+        MobileNo = mobileNo;
+    }
+
+    public static String getSource() {
+        return Source;
+    }
+
+    public static void setSource(String source) {
+        Source = source;
+    }
+
+    public static String getTransactionType() {
+        return TransactionType;
+    }
+
+    public static void setTransactionType(String transactionType) {
+        TransactionType = transactionType;
+    }
+
+    public static String getSMSText() {
+        return SMSText;
+    }
+
+    public static void setSMSText(String sMSText) {
+        SMSText = sMSText;
+    }
+
+    public static void setSecureHash(String secureHash) {
+        SecureHash = secureHash;
+    }
+
+    public static String getSecureHash() {
+        return SecureHash;
+    }
+
+    public static void setAPILink(String APILink) {
+        APIlink = APILink;
+    }
+
+    public static String getAPILink() {
+        return APIlink;
+    }
+
+    public static String getHashAlgorithm() {
+        return HASH_ALGORITHM;
+    }
+
+    public static void setPrivatekey(String privatekey) {
+        PrivateKey = privatekey;
+    }
+
+    public static String getPrivatekey() {
+        return PrivateKey;
+    }
+
+//------------------------------------------------------Variables-------------------------------------------------------------------------------------
+    // Global Variables
+    public static String TransactionTimeStamp;
+    public static String InternalReference;
+    public static String CoCode;
+    public static String CompanyID;
+    public static String CustomerNo;
+    public static String CustomerSector;
+    public static String MobileNo;
+    public static String Source;
+    public static String TransactionType;
+    public static String SMSText;
+    public static String SecureHash;
+    public static String APIlink;
+
+    public static final String HASH_ALGORITHM = "HMACSHA256";
+    public static String PrivateKey;
+    public static String Dataarr[];
+    public static String Status = "";
+    public static StringWriter buf = new StringWriter();
+
+    public static StringWriter buf2 = new StringWriter();
+
+    DirectMessage() {
+        TransactionTimeStamp = "";
+        InternalReference = "";
+        CoCode = "";
+        CompanyID = "";
+        CustomerNo = "";
+        CustomerSector = "";
+        MobileNo = "";
+        Source = "";
+        TransactionType = "";
+        SMSText = "";
+        SecureHash = "";
+        APIlink = "";
+        PrivateKey = "";
+        Dataarr = new String[11];
+        Status = "";
+
+        buf = new StringWriter();
+        buf2 = new StringWriter();
+
+    }
+
+//-------------------------------------------------------Functions----------------------------------------------------------------------------	
+	// Convert To Hex
+    public static String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+
+        try (Formatter formatter = new Formatter(sb)) {
+            for (byte b : bytes) {
+                formatter.format("%02x", b);
+            }
+        }
+        return sb.toString();
+    }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+    // Hashing Function
+    public static String hashMac(String text, String secretKey) throws SignatureException {
+
+        try {
+            SecretKeySpec sk = new SecretKeySpec(secretKey.getBytes(), getHashAlgorithm());
+            Mac mac = Mac.getInstance(((java.security.Key) sk).getAlgorithm());
+            mac.init((java.security.Key) sk);
+            final byte[] hmac = mac.doFinal(text.getBytes());
+            return toHexString(hmac);
+        } catch (NoSuchAlgorithmException e1) {
+            // throw an exception or pick a different encryption method
+            throw new SignatureException("error building signature, no such algorithm in device " + HASH_ALGORITHM);
+        } catch (InvalidKeyException e) {
+            throw new SignatureException("error building signature, invalid key " + HASH_ALGORITHM);
+        }
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public static String hash(String key, String txt) throws NoSuchAlgorithmException, InvalidKeyException {
+
+        Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+        sha256_HMAC.init(new SecretKeySpec(key.getBytes(), "HmacSHA256"));
+        byte[] result = sha256_HMAC.doFinal(txt.getBytes());
+        return (DatatypeConverter.printHexBinary(result));
+        // ONLY CONVERT TO HEX (= SWIFT) NOT FIRST TO BASE64
+
+    }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Write XML
+    public static void XMLWriter(String transactiontimestamp, String internalreference, String cocode, String companyID,
+            String customerno, String customersector, String mobilenumber, String source1, String transactiontype,
+            String textmessage, String securehash) {
+
+        //path = testpath;
+        try {
+
+            DocumentBuilderFactory docFactory = null;
+            docFactory = DocumentBuilderFactory.newInstance();
+
+            DocumentBuilder docBuilder = null;
+
+            docBuilder = docFactory.newDocumentBuilder();
+
+            // root elements
+            Document doc = null;
+            doc = docBuilder.newDocument();
+            Element rootElement = doc.createElement("SubmitSMSRequest");
+            doc.appendChild(rootElement);
+
+            // Transaction TimeStamp
+            Element TransactionTimeStampElement = doc.createElement("TransactionTimeStamp");
+            TransactionTimeStampElement.appendChild(doc.createTextNode(transactiontimestamp));
+            rootElement.appendChild(TransactionTimeStampElement);
+
+            // Internal Reference
+            Element InternalReferenceElement = doc.createElement("InternalReference");
+            InternalReferenceElement.appendChild(doc.createTextNode(internalreference));
+            rootElement.appendChild(InternalReferenceElement);
+
+            // Company Code
+            Element CoCodeElement = doc.createElement("CoCode");
+            CoCodeElement.appendChild(doc.createTextNode(cocode));
+            rootElement.appendChild(CoCodeElement);
+
+            // Company ID
+            Element CompanyIDElement = doc.createElement("CompanyID");
+            CompanyIDElement.appendChild(doc.createTextNode(companyID));
+            rootElement.appendChild(CompanyIDElement);
+
+            // Customer Number
+            Element CustomerNoElement = doc.createElement("CustomerNo");
+            CustomerNoElement.appendChild(doc.createTextNode(customerno));
+            rootElement.appendChild(CustomerNoElement);
+
+            // Customer Sector
+            Element CustomerSectorElement = doc.createElement("CustomerSector");
+            CustomerSectorElement.appendChild(doc.createTextNode(customersector));
+            rootElement.appendChild(CustomerSectorElement);
+
+            // Mobile Number
+            Element MobileNoElement = doc.createElement("MobileNo");
+            MobileNoElement.appendChild(doc.createTextNode(mobilenumber));
+            rootElement.appendChild(MobileNoElement);
+
+            // Source
+            Element SourceElement = doc.createElement("Source");
+            SourceElement.appendChild(doc.createTextNode(source1));
+            rootElement.appendChild(SourceElement);
+
+            // Transaction Type
+            Element TransactionTypeElement = doc.createElement("TransactionType");
+            TransactionTypeElement.appendChild(doc.createTextNode(transactiontype));
+            rootElement.appendChild(TransactionTypeElement);
+
+            // SMSText
+            Element SMSTextElement = doc.createElement("SMSText");
+            SMSTextElement.appendChild(doc.createTextNode(textmessage));
+            rootElement.appendChild(SMSTextElement);
+
+            // Secure Hash
+            Element SecureHashElement = doc.createElement("SecureHash");
+            SecureHashElement.appendChild(doc.createTextNode(securehash));
+            rootElement.appendChild(SecureHashElement);
+
+            // write the content into xml file
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer transformer = transformerFactory.newTransformer();
+            DOMSource source = new DOMSource(doc);
+
+            StreamResult result = new StreamResult(buf);
+
+			// Output to console for testing
+            //StreamResult result = new StreamResult(System.out);
+            transformer.transform(source, result);
+
+			//System.out.println("File saved!");
+        } catch (ParserConfigurationException pce) {
+            pce.printStackTrace();
+        } catch (TransformerException tfe) {
+            tfe.printStackTrace();
+        }
+
+    }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    public static String SHA256HMACString() {
+
+        return "TransactionTimeStamp=" + getTransactionTimeStamp() + "&InternalReference=" + getInternalReference()
+                + "&CoCode=" + getCoCode() + "&CompanyID=" + getCompanyID() + "&CustomerNo=" + getCustomerNo()
+                + "&CustomerSector=" + getCustomerSector() + "&MobileNo=" + getMobileNo() + "&Source=" + getSource()
+                + "&TransactionType=" + getTransactionType() + "&SMSText=" + getSMSText();
+
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Post
+    public static void Post(String APILink) throws Exception {
+
+        URL url = new URL(APILink);
+        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+        try {
+            conn.setReadTimeout(10000);
+            conn.setConnectTimeout(15000);
+            conn.setRequestMethod("POST");
+            conn.setDoInput(true);
+            conn.setDoOutput(true);
+
+            SSLContext sc = SSLContext.getInstance("TLSv1.2");
+            sc.init(null, null, new java.security.SecureRandom());
+            SSLContext.setDefault(sc);
+
+            conn.setSSLSocketFactory(sc.getSocketFactory());
+
+            String body = buf.toString();
+            //System.out.println(buf);
+
+            OutputStream output = new BufferedOutputStream(conn.getOutputStream());
+            output.write(body.getBytes());
+            output.flush();
+            //System.out.println(conn.getResponseCode());
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            Document doc = builder.parse(conn.getInputStream());
+
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            Transformer xform = transformerFactory.newTransformer();
+
+			// that’s the default xform; use a stylesheet to get a real one
+            xform.transform(new DOMSource(doc), new StreamResult(buf2));
+            //System.out.println(buf2.toString());
+
+            if (conn.getResponseCode() == 200) {
+                Status = "Connection Open|" + buf2.toString();
+                System.out.println(Status);
+            } else {
+                Status = "Error | " + buf2.toString();
+                System.out.println(Status);
+
+            }
+
+            /*DocumentBuilder buildertemp = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+             InputSource src = new InputSource();
+             src.setCharacterStream(new StringReader(buf2.toString()));
+             */
+			//Document doctemp = buildertemp.parse(src);
+            //String Result = doctemp.getElementsByTagName("ResultStatus").item(0).getTextContent();
+            /*
+             if(Result.equals("SUCCESS")) {
+				
+             System.out.println("SUCCESS | "+buf2.toString());
+
+             }
+             else {
+             System.out.println("ERROR | "+Result);
+
+             }
+             */
+        } finally {
+            conn.disconnect();
+        }
+
+    }
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    public static String ConvertXMLToString(String path) {
+
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(path));
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        String xmlinput;
+
+        StringBuffer sb = new StringBuffer();
+        try {
+            while ((xmlinput = br.readLine()) != null) {
+                sb.append(xmlinput.trim());
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        return sb.toString();
+
+    }
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++	
+//----------------------------------------------Separate Text By Delimiter-------------------------------------------------------------------------
+    public static void parseData(String str, String Delimeter) {
+
+        Scanner lineScanner = new Scanner(str);
+        lineScanner.useDelimiter("\\" + Delimeter);
+        int i = 0;
+        while (lineScanner.hasNext()) {
+
+            Dataarr[i] = lineScanner.next();
+            i++;
+        }
+        lineScanner.close();
+    }
+
+//------------------------------------------------------------------------------------------------------------------------------------------------------
+}
